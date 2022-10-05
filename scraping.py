@@ -6,11 +6,12 @@ from bs4 import BeautifulSoup as soup
 import pandas as pd
 import datetime as dt
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium  import webdriver
 
 def scrape_all():
 # Set the executable path and initialize Splinter
     executable_path = {'executable_path': ChromeDriverManager().install()}
-    browser = Browser('chrome', **executable_path, headless=False)
+    browser = Browser('chrome', **executable_path, headless=True)
 
     news_title, news_paragraph = mars_news(browser)
 
@@ -21,7 +22,7 @@ def scrape_all():
         "news_paragraph": news_paragraph,
         "featured_image": featured_image(browser),
         "facts": mars_facts(),
-        "hemisphere_images": hemisphere_image_urls
+        "hemispheres":  mars_hemispheres(browser)
     }
      # Stop webdriver and return data
     browser.quit()
@@ -79,10 +80,10 @@ def featured_image(browser):
     except AttributeError:
         return None
 
-        # Use the base url to create an absolute url
-        img_url = f'https://spaceimages-mars.com/{img_url_rel}'
+    # Use the base url to create an absolute url
+    img_url = f'https://spaceimages-mars.com/{img_url_rel}'
 
-        return img_url
+    return img_url
 
 def mars_facts():
     # ### Mars Facts
@@ -96,14 +97,15 @@ def mars_facts():
 
     # Assign columns and set index of dataframe
     df.columns=['Description', 'Mars', 'Earth']
-    df.set_index('Description', inplace=True)
+    df.set_index('Description', inplace=False)
 
     # Convert dataframe into HTML format, add bootstrap
     return df.to_html(classes="table table-striped")
 
-def mars_hemisphere():
+def mars_hemispheres(browser):
     # # D1: Scrape High-Resolution Mars’ Hemisphere Images and Titles
     #### Hemispheres
+    
     # 1. Use browser to visit the URL 
     url = 'https://marshemispheres.com/'
     browser.visit(url)
@@ -132,16 +134,15 @@ def mars_hemisphere():
         hemispheres["title"] = title
     
         hemisphere_image_urls.append(hemispheres)
-        browser.back()
-        # 5. Quit the browser
-        browser.quit()
+        
         # 4. Print the list that holds the dictionary of each image url and title.
-        return hemisphere_image_urls
+    return hemisphere_image_urls
 
 if __name__ == "__main__":
+   
      # If running as script, print scraped data
-    print(scrape_all())
-
+   print(scrape_all())
+ 
 
 
 
